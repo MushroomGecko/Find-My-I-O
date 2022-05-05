@@ -5,3 +5,5 @@ In preparation for the Linux kernel 5.19 update which adds in the ability to fin
 Currently, the "type" attribute is a placeholder for whatever variable name will be used to find the physical location of a device on your system come the 5.19 kernel.
 
 Included is a makefile that allows for easy installation and removal of the findmyio script. "sudo make install" installs the findmyio script into the /usr/bin directory and gives it executable permisisons. Alternatively, "sudo make uninstall" removes the findmyio file from your /usr/bin directory.
+
+It is recommended to run findmyio as 'sudo' so that the script is allowed to read all files in /sys/. If 'sudo' is not used, some files will return that permission was denied for cat for reading.
