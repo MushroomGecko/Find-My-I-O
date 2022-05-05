@@ -1,6 +1,4 @@
-PREFIX := /usr/local
-
-#install by default
+# install by default
 all: install
 
 install:
