@@ -1,12 +1,30 @@
 #!/bin/bash
 
 # variable name to search up
-file_type="type"
+file_type="physical_location"
+
+echo "Would you like to look through (1)all devices or just (2)pci devices?"
+user_preference=""
+
+while ((user_preference != 1)) && ((user_preference != 2));
+do
+	read user_preference
+	if (("$user_preference" == 1));
+	then
+		root_location="/sys/devices"
+	elif (("$user_preference" == 2));
+	then
+		root_location="/sys/devices/pci0000:00"
+	else
+		echo -e "Please enter a valid input. 1 for \"all\" devices or 2 for \"pci\" devices"
+	fi
+done
+echo ""
+
 
 # traverse through /sys and output results
-device_types=($(ls /sys))
+device_types=($(ls $root_location))
 device_types+=("all")
-echo "${#device_types[@]}"
 
 for ((i=0; i < ${#device_types[@]}; i++));
 do
@@ -20,14 +38,22 @@ echo ""
 
 # if user picks the 'all' option, output everything
 # otherwise only output specified narrowed path
-if ((user_input==(${#device_types[@]}-1)))
+if ((user_input==(${#device_types[@]}-1)));
 then
-	for i in $(find /sys -name $file_type);
+	for i in $(find $root_location -name $file_type);
 	do
-		echo $i :  $(cat $i)
+		list_of_files=($(ls $i))
+		echo -e $i
+		for ((j=0; j < ${#list_of_files[@]}; j++));
+		do
+			location=$i/${list_of_files[j]}
+			echo -e "\t${list_of_files[j]}:|$(cat $location)" >> outputs
+		done
+        	column -s "|" -t outputs
+		rm outputs		
 	done
 else
-	sub_device_types=($(ls /sys/${device_types[user_input]}))
+	sub_device_types=($(ls $root_location/${device_types[user_input]}))
 	sub_device_types+=("all")
 	echo "${#sub_device_types[@]}"
 
@@ -40,16 +66,33 @@ else
 	read sub_user_input
 	echo ""
 
-	if ((sub_user_input==(${#sub_device_types[@]}-1)))
+	if ((sub_user_input==(${#sub_device_types[@]}-1)));
 	then
-		for j in $(find /sys/${device_types[user_input]} -name $file_type);
+		for i in $(find $root_location/${device_types[user_input]} -name $file_type);
 		do
-			echo $j :  $(cat $j)
-		done
+                	list_of_files=($(ls $i))
+                	echo -e $i
+                	for ((j=0; j < ${#list_of_files[@]}; j++));
+                	do
+                        	location=$i/${list_of_files[j]}
+                        	echo -e "\t${list_of_files[j]}:|$(cat $location)" >> outputs
+                	done
+                	column -s "|" -t outputs
+                	rm outputs
+        	done
+
 	else
-		for j in $(find /sys/${device_types[user_input]}/${sub_device_types[sub_user_input]} -name $file_type);
+		for i in $(find $root_location/${device_types[user_input]}/${sub_device_types[sub_user_input]} -name $file_type);
 		do
-			echo $j :  $(cat $j)
+			list_of_files=($(ls $i))
+			echo -e $i
+			for ((j=0; j < ${#list_of_files[@]}; j++));
+			do
+				location=$i/${list_of_files[j]}
+				echo -e "\t${list_of_files[j]}:|$(cat $location)" >> outputs
+			done
+			column -s "|" -t outputs
+			rm outputs
 		done
 	fi
 fi
